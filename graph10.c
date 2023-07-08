@@ -57,7 +57,6 @@ void clearList(list** L) {
   if (tmp->next) clearList(&tmp->next);
   if (tmp->neigh) clearList(&tmp->neigh);
 
-  //free(tmp->nd);
   free(tmp);
   *L = NULL;
 }
@@ -119,7 +118,6 @@ void clearStack(stack** P) {
   if (!P) return;
   if (tmp->next) clearStack(&tmp->next);
 
-  //free(tmp->top);
   free(tmp);
   *P = NULL;
 }
@@ -160,7 +158,6 @@ void clearQueue(queue** P) {
   if (tmp->head) clearQueue(&tmp->head);
   if (tmp->tail) clearQueue(&tmp->tail);
 
-  //free(tmp->top);
   free(tmp);
   *P = NULL;
 }
@@ -410,7 +407,6 @@ void clearState(state** st) {
   if (!st) return;
   if (tmp->next) clearState(&tmp->next);
 
-  //free(tmp->nd);
   free(tmp);
   *st = NULL;
 }
@@ -536,7 +532,6 @@ int isInChemin(chemin* pth, unsigned int key) {
   return 0;
 }
 
-
 // parcours en profondeur du graph en itératif
 // on enregistre les nodes en noir (state==2) pour avoir la liste en profondeur  
 // note: si on affiche à chaque empilement, l'affichage est identique au parcours en largeur 
@@ -580,6 +575,7 @@ void parcoursDFSIteratif(graph* G, list* lsrc, state** st) {
     printChemin(C);
   }
 }
+
 // avec ce parcours en itératif,
 // on affiche les éléments à son enfilement pour voir les nodes en largeur
 // on utilise la file (queue) FIFO
@@ -609,6 +605,7 @@ void parcoursBFSIteratif(graph* G, list* lsrc, state** st) {
     }
   }
 }
+
 // affiche la matrice correspondant à un graphe
 // en affichant le poid d'un lien entre 2 sommets du graphe
 // ici le lien est 1 s'il existe (l'arc exite) et 0 sinon
@@ -651,6 +648,7 @@ void printMatriceGraph(graph* G, int nbchar) {
     tmpx = tmpx->next;
   }
 }
+
 // affiche les chemins éxistant entre les sommets src et dst (src vers dst si orienté)
 // méthode récursif
 // on affiche seulement si la src == dst
@@ -676,7 +674,8 @@ void path(graph* G, unsigned int src, unsigned int dst, chemin* pth) {
     }
   }
 }
-// le menu déroulant pour choisir les actions à éxecuter
+
+// menu déroulant pour choisir les actions à éxecuter
 void printMenu() {
 
   printf("\n");for (int i = 0;i < 40;i++)printf("=");printf("\n");
