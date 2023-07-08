@@ -7,14 +7,14 @@
 #define limit 50
 
 // variable globale
-int notOriented = 0; // par defaut 0:graphe orienté, 1 non orienté
-char symArc[3] = "->";// affichage et saisie des arcs: -> si orienté , sinon -
-// les sommets: on peut modifier le type de key en d'autre type! il faudrai changer quelques fonctions!
+int notOriented = 0;    // par défaut 0: graphe orienté, 1 non orienté
+char symArc[3] = "->";  // affichage et saisie des arcs: "->" si orienté , sinon "-"
+// pour les sommets: on pourra modifier le type de key en d'autre type que 'unsigned int'! il faudrai changer quelques fonctions!
 typedef struct node {
   unsigned int key;
 } node;
 
-// crée un somet (pointeur sur un sommet) dont la valeur du key = val
+// crée un sommet (pointeur sur un sommet) dont la valeur du key = val
 void initNode(node** nd, unsigned int val) {
   *nd = malloc(sizeof(node));
   (*nd)->key = val;
@@ -25,17 +25,17 @@ typedef struct edge {
   node* dst;
   struct edge* next;
 } edge;
-// liste chainée contenant 2 listes un pour les voisins d'un sommet nd : neigh 
-// et l'autre: next = la liste suivant dans la liste globale des (listes) de sommets du graphe 
+// liste chainée contenant 2 listes un pour les voisins d'un sommet 'nd' : 'neigh' 
+// et l'autre: 'next' = la liste suivant dans la liste globale des (listes) de sommets du graphe 
 typedef struct list {
   node* nd;
-  struct list* next;  // le suivant de nd dans l'ensemble des sommets
-  struct list* neigh; // les voisins de nd
+  struct list* next;  // le suivant de 'nd' dans l'ensemble des sommets
+  struct list* neigh; // les voisins de 'nd'
 } list;
 
 
 typedef struct graph {
-  struct list* lnd;   // liste de tous les sommets  (nodes)
+  struct list* lnd;   // liste de tous les sommets du graphe ainsi que les voisin de chaque sommet
   struct edge* edges; // les voisins des sommets
 } graph;
 
@@ -44,13 +44,13 @@ void initGraph(graph** G) {
   (*G)->lnd = NULL;
   (*G)->edges = NULL;
 }
-// compare les valeurs (key) de 2 sommets
-// 0 si egale, negatif si strictement inférieur et strictement positif si strict supérieur
-// pour faciliter le changement si le key est un *char , même retour que strcmp
+// compare les valeurs ('key') de 2 sommets
+// 0 si égale, negatif si strictement inférieur et strictement positif si strict supérieur
+// pour faciliter le changement si le key est un '*char' , même retour que 'strcmp'
 int cmpNode(node* n1, node* n2) {
   return (n1->key - n2->key);
 }
-// supprime la liste *L
+// supprime la liste '*L'
 void clearList(list** L) {
   list* tmp = *L;
   if (!L) return;
@@ -61,8 +61,8 @@ void clearList(list** L) {
   *L = NULL;
 }
 
-// ajout d'un sommet dans la liste next
-// verifier s'il est déjà dans la liste les sommets sont uniques
+// ajout d'un sommet dans la liste 'next'
+// vérifie s'il est déjà dans la liste. Les sommets sont uniques
 void addNodeNextList(list** L, node* nd) {
   list* tmp = *L;
   list* elem = malloc(sizeof(list));
@@ -78,7 +78,7 @@ void addNodeNextList(list** L, node* nd) {
   }
   else *L = elem;
 }
-// cherche le node src, puis ajouter le node nei dans son neigh si nei n'est pas dans neigh (vérification)
+// cherche le node 'src', puis ajouter le node 'nei' dans son 'neigh' si 'nei' n'est pas dans 'neigh' (vérification)
 void addNodeNeighList(list** L, node* src, node* nei) {
   list* tmp = *L;
   list* elem = malloc(sizeof(list));
@@ -151,7 +151,7 @@ typedef struct queue {
   struct queue* tail; // la queue
   list* top;
 } queue;
-// suprime la file
+// supprime la file
 void clearQueue(queue** P) {
   queue* tmp = *P;
   if (!P) return;
@@ -192,9 +192,9 @@ void defiler(queue** P, list* lnd) {
   }
   else lnd = NULL;
 }
-// teste si (src--dst) est dans les arcs dg
-// 0 si (src--dst) n'est pas dans les arcs dg
-// 1 si (src--dst) est dans les arcs dg
+// teste si (src--dst) est dans les arcs 'dg'
+// 0 si (src--dst) n'est pas dans les arcs 'dg'
+// 1 si (src--dst) est dans les arcs 'dg'
 int isInEdge(edge* dg, node* src, node* dst) {
   edge* tmp = dg;
   while (tmp) {
@@ -204,8 +204,8 @@ int isInEdge(edge* dg, node* src, node* dst) {
   return 0;
 }
 
-// ajouter un arc (src--dst) dans la liste dg
-// vérifie avant d'ajouter si les entrées sont déjà dans dg
+// ajout d'un arc (src--dst) dans la liste 'dg'
+// vérifie avant d'ajouter si les entrées sont déjà dans 'dg'
 void addEdge(edge** dg, node* src, node* dst) {
   if (!isInEdge(*dg, src, dst)) {
     edge* tmp = *dg;
@@ -220,7 +220,7 @@ void addEdge(edge** dg, node* src, node* dst) {
     else *dg = elem;
   }
 }
-// suprime la liste des arcs
+// supprime la liste des arcs
 void clearEdge(edge** dg) {
   edge* tmp = *dg;
   if (!dg) return;
@@ -231,7 +231,7 @@ void clearEdge(edge** dg) {
   free(tmp);
   *dg = NULL;
 }
-//affiche les arcs d'un graphe
+// affiche les arcs 'dg' d'un graphe
 void printEdge(edge* dg) {
   edge* tmp = dg;
   while (tmp) {
@@ -240,7 +240,7 @@ void printEdge(edge* dg) {
   }
   printf("\n");
 }
-// affiche les sommets d'un graphe
+// affiche les sommets d'un graphe (les 'next')
 void printListNodesNext(list* L) {
   list* tmp = L;
   while (tmp) {
@@ -249,7 +249,7 @@ void printListNodesNext(list* L) {
   }
   printf("\n");
 }
-// affiche le soisin du sommet src
+// affiche le voisin 'neigh' du sommet 'src'
 void printListNodeNeigh(list* L, node* src) {
   list* tmp = L;
   while (tmp && cmpNode(tmp->nd, src)) tmp = tmp->next;
@@ -262,39 +262,39 @@ void printListNodeNeigh(list* L, node* src) {
   }
   printf("\n");
 }
-// affiche les voisins d'un sommet en entier, 
-// créer un node avec la valeur entier et appel la fonction précédent 'printListNodeNeighKey'
+// affiche les voisins 'neigh' d'un sommet en 'key' entier, 
+// crée un node avec la valeur entier et appel la fonction précédent 'printListNodeNeighKey'
 void printListNodeNeighKey(list* L, unsigned int key) {
   node* src = NULL;
   initNode(&src, key);
   printListNodeNeigh(L, src);
 }
 
-// pour traiter les saisis des arcs pars l'utilisateur
-// avec des séparateurs: ' ' ou '|' ou ','
+// pour traiter les saisis des arcs pars l'utilisateur dans 'saisirEdges'
+// avec des séparateurs: ' ' ou '|' ou ',' (espace ou barre(veritale) ou virgule)
 // on accepte les chaines liées par un caractère différents des séparateurs comme '-', '>', '.', 'a'
 // par exemple (N1-N2>N3*N4|N5-N6,N8@N9)==(N1-N2,N2-N3,N3-N4,N5-N6,N8-N9)
 void parseInput(char input[8 * limit], unsigned int x[limit][2], unsigned int* cur) {
   // x tableau des arcs, pour l'arc i: x[i][0] source et x[i][1] destination, cur pointeur sur la taille de x remplie
-  printf("input: %s\n", input);
+  // printf("debug input: %s\n", input);
   *cur = 0;
   unsigned char valInBuffer = 0; // si 0 pas de nouveau valeur dans v, si 1 nouveau valeur existant 
 
   unsigned char precAdd = 0;
   unsigned char pPrecAdd = 0;
-  // precAdd et pPrecAdd sont 2 variables pour enregistrer les types des précédents entrer input[i] 
-  // 0 si separateur (' ' ou '|' ou ','
+  // precAdd et pPrecAdd sont 2 variables pour enregistrer les types des précédents entrer 'input[i]'
+  // 0 si séparateur (' ' ou '|' ou ','
   // 2 si chiffree 
-  // 1 sinon interprété comme lien  
+  // 1 sinon: interprété comme lien au plus 2 charactères successives sinon résultat indéfini
 
   unsigned int size = strlen(input);
-  unsigned int v = 0; // pour créer les entiers écrits dans la chaine de caractères
+  unsigned int v = 0; // pour créer les entiers écrits dans la chaine de caractères 'input'
   for (unsigned int i = 0; i < size; i++) {
     // printf("debug [%u]=%c: [%d > %d] v:%u cur:%u\n",i,input[i],pPrecAdd,precAdd,v,*cur);
     if (*cur < limit) { // pour ne pas deborder dans le tableau x 
-      if (input[i] == ' ' || input[i] == ',' || input[i] == '|') {//separation
+      if (input[i] == ' ' || input[i] == ',' || input[i] == '|') {// séparation
         if (precAdd != 0 && valInBuffer) {
-          if (pPrecAdd == 1 && precAdd == 2) {// chiffre,v: sommet src
+          if (pPrecAdd == 1 && precAdd == 2) {// chiffre, v: sommet dst
             x[(*cur)++][1] = v;
             pPrecAdd = precAdd;
             v = 0;
@@ -311,14 +311,14 @@ void parseInput(char input[8 * limit], unsigned int x[limit][2], unsigned int* c
         precAdd = 2;
 
       }
-      else { //symbole (!= des séparateur == espace virgule barre)
+      else { //symbole (différent des séparateurs qui sont espace virgule barre)
         if (precAdd != 1) {
           if (valInBuffer) {
-            if (pPrecAdd == 0 && precAdd == 2) {// chaine -v-v
+            if (pPrecAdd == 0 && precAdd == 2) {// chaine:  ,v-
               x[(*cur)][0] = v;
               pPrecAdd = precAdd;
             }
-            else if ((pPrecAdd == 2 && precAdd == 0) || (pPrecAdd == 1 && precAdd == 2)) {//s'il y a un séparateur: chaine v- v ou v--v
+            else if ((pPrecAdd == 2 && precAdd == 0) || (pPrecAdd == 1 && precAdd == 2)) {//s'il y a un séparateur: chaine v0-,v ou v0,-v
               x[(*cur)++][1] = v;
               x[(*cur)][0] = v;
               pPrecAdd = precAdd;
@@ -335,7 +335,7 @@ void parseInput(char input[8 * limit], unsigned int x[limit][2], unsigned int* c
     }
   }
 }
-// pour vider le buffer de la saisi de l'écran (input) stdin
+// pour vider le buffer de la saisi de l'écran (input) 'stdin'
 void flushInputScreen()
 {
   int c;
@@ -346,6 +346,7 @@ void flushInputScreen()
 // vérifie aussi si les sommets de l'arc sont parmis les sommets, sinon on l'ajoute
 // ajoute le sommet dst parmis les voisins de src si dst n'est pas déjà dans la liste
 // si graphe non orienté: dst-src est aussi un arc
+// plus d'explication dans les 'printf's ci dessous:
 void saisirEdges(graph** G) {
 
   char input[8 * limit];
@@ -353,8 +354,8 @@ void saisirEdges(graph** G) {
   unsigned int size = 0;
   printf("entrée liste d'arcs de la forme N1-N2-N3 N4>N5>N6,N7-N8-N9|N10-N11\n");
   printf("les séparateurs possibles sont:' ' ou ',' ou '|' comme exemples au dessus\n");
-  printf("Ni sont des sommets liés par les caractères comme '-','>','.','#'... != séparateurs\n");
-  printf("par exemple (N1-N2>N3*N4|N5-N6,N8@N9 N7@N10)==(N1-N2,N2-N3,N3-N4,N5-N6,N8-N9,N7-N10)\n");
+  printf("Ni sont des sommets liés par (1 ou 2) caractères successives comme '-','>','.','#','_-',..., etc différents des séparateurs\n");
+  printf("par exemple (N1-N2>N3-*N4|N5-+N6,N8-@N9 N7@N10)==(N1-N2,N2-N3,N3-N4,N5-N6,N8-N9,N7-N10)\n");
   flushInputScreen();
   fgets(input, 8 * limit, stdin);
   parseInput(input, in, &size);
@@ -362,7 +363,7 @@ void saisirEdges(graph** G) {
   //printf("debug  size = %d\n",size); 
 
   for (unsigned int i = 0;i < size;i++) {
-    //printf(" debug %u %s %u \n",in[i][0],symArc,in[i][1]);
+    //printf(" debug %u %s %u \n",in[i][0],symArc,in[i][1]); 
 
     node* src = NULL, * dst = NULL;
     initNode(&src, in[i][0]);
@@ -469,7 +470,7 @@ void parcoursDFSRec(graph* G, node* src, state** st) {
   }
 }
 // liste chainée pour enregistrement des sommets 
-// (comme un tableau de sommet)
+// (comme un tableau de sommets)
 typedef struct chemin {
   unsigned int key;
   struct chemin* next;
@@ -532,7 +533,7 @@ int isInChemin(chemin* pth, unsigned int key) {
   return 0;
 }
 
-// parcours en profondeur du graph en itératif
+// parcours en profondeur du graphe en itératif
 // on enregistre les nodes en noir (state==2) pour avoir la liste en profondeur  
 // note: si on affiche à chaque empilement, l'affichage est identique au parcours en largeur 
 // solution: enregistrement à la tête d'une liste 'chemin' les nodes noir (state==2) pendant le dépilement
@@ -680,12 +681,12 @@ void printMenu() {
 
   printf("\n");for (int i = 0;i < 40;i++)printf("=");printf("\n");
   printf("1. saisir arcs\n2. afficher les arcs\n3. saisir sommet\n4. afficher les sommets\n5. afficher les voisins d'un sommet\n");
-  printf("6. parcourir en profondeur (recurssive)\n7. parcourir en profondeur (iterative)\n8. afficher la matrice du graphe\n");
+  printf("6. parcourir en profondeur (recursif)\n7. parcourir en profondeur (iteratif)\n8. afficher la matrice du graphe\n");
   printf("9. lister les chemins entre 2 sommets\n0. parcourir en largeur (iteratif)\nq. Quitter (ou s. Sortir)\n");
   for (int i = 0;i < 40;i++)printf("=");printf("\n");
 }
 int main() {
-  printf("voulez vous travailler sur les graphes non orientés? o/n\n");
+  printf("voulez vous travailler sur les graphes non orientés? y=o/n\n");
   char cont[256];
   scanf("%s", cont);
   if (cont[0] == 'o' || cont[0] == 'O' || cont[0] == 'y' || cont[0] == 'Y') {
