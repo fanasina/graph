@@ -2,13 +2,16 @@
 #include <stdlib.h>
 #include <string.h>
 
-// limite le nombre d'arcs saisie en une ligne pour 'saisirEdges' et 'parseInput'
+
+// limite le nombre d'arêtes saisie en une ligne pour 'saisirEdges' et 'parseInput'
 // mais les ars sont enregistré dans une chaine chainée, ie, pas de limitation en nombre!
 #define limit 50
 
 // variable globale
-int notOriented = 0;    // par défaut 0: graphe orienté, 1 non orienté
-char symArc[3] = "->";  // affichage et saisie des arcs: "->" si orienté , sinon "-"
+int undirected = 0;    // par défaut 0: graphe orienté, 1 non orienté
+char symArete[3] = "->";  // affichage et saisie des arêtes: "->" si orienté , sinon "-"
+//language
+int fr = 0;
 // pour les sommets: on pourra modifier le type de key en d'autre type que 'unsigned int'! il faudrai changer quelques fonctions!
 typedef struct node {
   unsigned int key;
@@ -19,7 +22,7 @@ void initNode(node** nd, unsigned int val) {
   *nd = malloc(sizeof(node));
   (*nd)->key = val;
 }
-// liste chainée des arcs (src->dst)
+// liste chainée des arêtes (src->dst)
 typedef struct edge {
   node* src;
   node* dst;
@@ -192,9 +195,9 @@ void defiler(queue** P, list* lnd) {
   }
   else lnd = NULL;
 }
-// teste si (src--dst) est dans les arcs 'dg'
-// 0 si (src--dst) n'est pas dans les arcs 'dg'
-// 1 si (src--dst) est dans les arcs 'dg'
+// teste si (src--dst) est dans les arêtes 'dg'
+// 0 si (src--dst) n'est pas dans les arêtes 'dg'
+// 1 si (src--dst) est dans les arêtes 'dg'
 int isInEdge(edge* dg, node* src, node* dst) {
   edge* tmp = dg;
   while (tmp) {
@@ -204,7 +207,7 @@ int isInEdge(edge* dg, node* src, node* dst) {
   return 0;
 }
 
-// ajout d'un arc (src--dst) dans la liste 'dg'
+// ajout d'un arête (src--dst) dans la liste 'dg'
 // vérifie avant d'ajouter si les entrées sont déjà dans 'dg'
 void addEdge(edge** dg, node* src, node* dst) {
   if (!isInEdge(*dg, src, dst)) {
@@ -220,7 +223,7 @@ void addEdge(edge** dg, node* src, node* dst) {
     else *dg = elem;
   }
 }
-// supprime la liste des arcs
+// supprime la liste des arêtes
 void clearEdge(edge** dg) {
   edge* tmp = *dg;
   if (!dg) return;
@@ -231,11 +234,11 @@ void clearEdge(edge** dg) {
   free(tmp);
   *dg = NULL;
 }
-// affiche les arcs 'dg' d'un graphe
+// affiche les arêtes 'dg' d'un graphe
 void printEdge(edge* dg) {
   edge* tmp = dg;
   while (tmp) {
-    printf(" %u %s %u |", tmp->src->key, symArc, tmp->dst->key);
+    printf(" %u %s %u |", tmp->src->key, symArete, tmp->dst->key);
     tmp = tmp->next;
   }
   printf("\n");
@@ -270,12 +273,12 @@ void printListNodeNeighKey(list* L, unsigned int key) {
   printListNodeNeigh(L, src);
 }
 
-// pour traiter les saisis des arcs pars l'utilisateur dans 'saisirEdges'
+// pour traiter les saisis des arêtes pars l'utilisateur dans 'saisirEdges'
 // avec des séparateurs: ' ' ou '|' ou ',' (espace ou barre(veritale) ou virgule)
 // on accepte les chaines liées par un caractère différents des séparateurs comme '-', '>', '.', 'a'
 // par exemple (N1-N2>N3*N4|N5-N6,N8@N9)==(N1-N2,N2-N3,N3-N4,N5-N6,N8-N9)
 void parseInput(char input[8 * limit], unsigned int x[limit][2], unsigned int* cur) {
-  // x tableau des arcs, pour l'arc i: x[i][0] source et x[i][1] destination, cur pointeur sur la taille de x remplie
+  // x tableau des arêtes, pour l'arête i: x[i][0] source et x[i][1] destination, cur pointeur sur la taille de x remplie
   // printf("debug input: %s\n", input);
   *cur = 0;
   unsigned char valInBuffer = 0; // si 0 pas de nouveau valeur dans v, si 1 nouveau valeur existant 
@@ -324,7 +327,8 @@ void parseInput(char input[8 * limit], unsigned int x[limit][2], unsigned int* c
               pPrecAdd = precAdd;
             }
             else {//  
-              printf("erreur saisi symbole, espace_%c verifier svp\n", input[i]);
+              if (fr) printf("erreur saisi symbole, espace_%c verifier svp\n", input[i]);
+              else printf("input error, please check %c \n", input[i]);
             }
           }
           v = 0;
@@ -343,19 +347,23 @@ void flushInputScreen()
 }
 // écrire les edges et extraire en même temps les nodes
 // extraction des entrées avec 'parseInput'
-// vérifie aussi si les sommets de l'arc sont parmis les sommets, sinon on l'ajoute
+// vérifie aussi si les sommets de l'arête sont parmis les sommets, sinon on l'ajoute
 // ajoute le sommet dst parmis les voisins de src si dst n'est pas déjà dans la liste
-// si graphe non orienté: dst-src est aussi un arc
+// si graphe non orienté: dst-src est aussi un arête
 // plus d'explication dans les 'printf's ci dessous:
 void saisirEdges(graph** G) {
 
   char input[8 * limit];
   unsigned int in[limit][2];
   unsigned int size = 0;
-  printf("entrée liste d'arcs de la forme N1-N2-N3 N4>N5>N6,N7-N8-N9|N10-N11\n");
-  printf("les séparateurs possibles sont:' ' ou ',' ou '|' comme exemples au dessus\n");
-  printf("Ni sont des sommets liés par (1 ou 2) caractères successives comme '-','>','.','#','_-',..., etc différents des séparateurs\n");
-  printf("par exemple (N1-N2>N3-*N4|N5-+N6,N8-@N9 N7@N10)==(N1-N2,N2-N3,N3-N4,N5-N6,N8-N9,N7-N10)\n");
+  if (fr)printf("%s%s%s%s", "entrée liste d'arêtes de la forme N1-N2-N3 N4>N5>N6,N7-N8-N9|N10-N11\n",
+    "les séparateurs possibles sont:' ' ou ',' ou '|' comme exemples au dessus\n",
+    "Ni sont des sommets liés par (1 ou 2) caractères successives comme '-','>','.','#','_-',..., etc différents des séparateurs\n",
+    "par exemple (N1-N2>N3-*N4|N5-+N6,N8-@N9 N7@N10)==(N1-N2,N2-N3,N3-N4,N5-N6,N8-N9,N7-N10)\n");
+  else printf("%s%s%s%s", "enter edges: accept chain separate with these separator characters: space` ` or coma`,` or `|` . \n",
+    "the link between vertices N1 and N2 can be any character string of length one or two other than the separator characters.\n",
+    "exemple: 1 - 2 -*5 -+8--8, 7 / 4//6\\3 10++11++12..13 15..8\n",
+    "> == > : 1 - 2 | 2 - 5 | 5 - 8 | 8 - 8 | 7 - 4 | 4 - 6 | 6 - 3 | 10 - 11 | 11 - 12 | 12 - 13 | 15 - 8 | \n");
   flushInputScreen();
   fgets(input, 8 * limit, stdin);
   parseInput(input, in, &size);
@@ -363,7 +371,7 @@ void saisirEdges(graph** G) {
   //printf("debug  size = %d\n",size); 
 
   for (unsigned int i = 0;i < size;i++) {
-    //printf(" debug %u %s %u \n",in[i][0],symArc,in[i][1]); 
+    //printf(" debug %u %s %u \n",in[i][0],symArete,in[i][1]); 
 
     node* src = NULL, * dst = NULL;
     initNode(&src, in[i][0]);
@@ -372,7 +380,7 @@ void saisirEdges(graph** G) {
     addNodeNextList(&(*G)->lnd, src);
     addNodeNextList(&(*G)->lnd, dst);
     addNodeNeighList(&(*G)->lnd, src, dst);
-    if (notOriented) addNodeNeighList(&(*G)->lnd, dst, src); // si non orienté, src est aussi voisin de dst
+    if (undirected) addNodeNeighList(&(*G)->lnd, dst, src); // si non orienté, src est aussi voisin de dst
 
   }
 }
@@ -383,10 +391,14 @@ void saisirNode(graph** G) {
   int scn = 0, cnt = 0;
   do {
     if (cnt == 0) {
-      printf("entrée un sommet qui est un entier positif\n");
+      if (fr)printf("entrée un sommet qui est un entier positif\n");
+      else printf("enter a vertex which is a positive integer\n");
       cnt = 1;
     }
-    else printf("erreur saisie, entier positif\n");
+    else {
+      if (fr) printf("erreur saisie, entier positif\n");
+      else printf("input error\n");
+    }
     scn = scanf("%u", &s);
   } while (scn != 1);
   node* src = NULL;
@@ -515,10 +527,10 @@ void copyChemin(chemin** dst, chemin* src) {
   }
 }
 // supprime la liste
-void clearChemin(chemin** L) {
+void clearêtehemin(chemin** L) {
   chemin* tmp = *L;
   if (!L) return;
-  if (tmp->next) clearChemin(&tmp->next);
+  if (tmp->next) clearêtehemin(&tmp->next);
   free(tmp);
   *L = NULL;
 }
@@ -609,7 +621,7 @@ void parcoursBFSIteratif(graph* G, list* lsrc, state** st) {
 
 // affiche la matrice correspondant à un graphe
 // en affichant le poid d'un lien entre 2 sommets du graphe
-// ici le lien est 1 s'il existe (l'arc exite) et 0 sinon
+// ici le lien est 1 s'il existe (l'arête exite) et 0 sinon
 // on liste d'abord les sommets dans l'ordre d'entrée (saisie) dans le graphe
 // puis sur chaque ligne correspond à un sommet et son lien avec les autres sommets
 void printMatriceGraph(graph* G, int nbchar) {
@@ -660,7 +672,7 @@ void path(graph* G, unsigned int src, unsigned int dst, chemin* pth) {
   addQueuChemin(&C, src);
   if (src == dst) {
     printChemin(C);
-    clearChemin(&C);
+    clearêtehemin(&C);
   }
   else {
     while (tmpx && tmpx->nd->key != src) tmpx = tmpx->next;
@@ -680,18 +692,29 @@ void path(graph* G, unsigned int src, unsigned int dst, chemin* pth) {
 void printMenu() {
 
   printf("\n");for (int i = 0;i < 40;i++)printf("=");printf("\n");
-  printf("1. saisir arcs\n2. afficher les arcs\n3. saisir sommet\n4. afficher les sommets\n5. afficher les voisins d'un sommet\n");
-  printf("6. parcourir en profondeur (recursif)\n7. parcourir en profondeur (iteratif)\n8. afficher la matrice du graphe\n");
-  printf("9. lister les chemins entre 2 sommets\n0. parcourir en largeur (iteratif)\nq. Quitter (ou s. Sortir)\n");
+  if (fr)
+    printf("%s%s%s", "1. saisir arêtes\n2. afficher les arêtes\n3. saisir sommet\n4. afficher les sommets\n5. afficher les voisins d'un sommet\n",
+      "6. parcourir en profondeur (recursif)\n7. parcourir en profondeur (iteratif)\n8. afficher la matrice du graphe\n",
+      "9. lister les chemins entre 2 sommets\n0. parcourir en largeur (iteratif)\nq. Quitter (ou s. Sortir)\n");
+  else printf("%s%s%s%s", "1. enter edges.\n2. display the edges.\n3. enter vertex.\n4. display vertices.\n",
+    "5. display the neighbours of a vertex\n6. browse in depth (recursive).\n",
+    "7. browse in depth (iterative).\n8. display graph matrix\n9. to list the paths between 2 summits.\n",
+    "0. browse widthwise (iterative).\nq. Quit (or s. Exit).\n");
   for (int i = 0;i < 40;i++)printf("=");printf("\n");
 }
 int main() {
-  printf("voulez vous travailler sur les graphes non orientés? y=o/n\n");
   char cont[256];
+  printf("french ? y/n\n");
+  scanf("%s", cont);
+  if (cont[0] == 'o' || cont[0] == 'O' || cont[0] == 'y' || cont[0] == 'Y')
+    fr = 1;
+
+  if (fr) printf("voulez vous travailler sur les graphes non orientés? y=o/n\n");
+  else printf("would you like to work on undirected graphs? y/n\n");
   scanf("%s", cont);
   if (cont[0] == 'o' || cont[0] == 'O' || cont[0] == 'y' || cont[0] == 'Y') {
-    notOriented = 1;
-    strcpy(symArc, "-");
+    undirected = 1;
+    strcpy(symArete, "-");
   }
 
   unsigned int sommet;
@@ -707,23 +730,29 @@ int main() {
     saisirEdges(&G);
     break;
     case '2':
-    printf("liste des arcs du graphe\n");
+    if (fr) printf("liste des arêtes du graphe\n");
+    else printf("list of graph edges\n");
     printEdge(G->edges);
     break;
     case '3':
     saisirNode(&G);
     break;
     case '4':
-    printf("liste des sommets du graphe\n");
+    if (fr) printf("liste des sommets du graphe\n");
+    else printf("list of vertices in the graph\n");
     printListNodesNext(G->lnd);
     break;
     case '5':
-    printf("entrer un sommet:\n"); scanf("%u", &sommet);
-    printf("les voisins de %u sont:\n", sommet);
+    if (fr)printf("entrer un sommet:\n");
+    else printf("enter a vertex\n");
+    scanf("%u", &sommet);
+    if (fr) printf("les voisins de %u sont:\n", sommet);
+    else printf("%u's neighbours are\n", sommet);
     printListNodeNeighKey(G->lnd, sommet);
     break;
     case '6':
-    printf("parcours en profondeur du graphe en recursif\n");
+    if (fr) printf("parcours en profondeur du graphe en recursif\n");
+    else printf("deep recursive graph traversal\n");
     initStateGraph(&st, G);
     tmp = G->lnd;
     while (tmp) {
@@ -733,7 +762,8 @@ int main() {
     printf("\n");
     break;
     case '7':
-    printf("parcours en profondeur du graphe en itératif\n");
+    if (fr) printf("parcours en profondeur du graphe en itératif\n");
+    else printf("iterative deep graph traversal\n");
     initStateGraph(&st, G);
     tmp = G->lnd;
     while (tmp) {
@@ -744,24 +774,29 @@ int main() {
     break;
     case '8':
     int nbchar = 2;
-    printf("entrer le nombre de decimal du plus grand sommet\n");
+    if (fr) printf("entrer le nombre de decimal du plus grand sommet\n");
+    else printf("enter the decimal number of the largest vertex\n");
     scanf("%d", &nbchar);
-    printf("matrice du graph\n");
+    if (fr) printf("matrice du graph\n");
+    else printf("graph matrix\n");
     printMatriceGraph(G, nbchar);
     break;
     case '9':
     unsigned int s, d, cntds = 0;
     do {
-      printf("entrer 2 sommets N%sM, N,M 2 sommets entier positif\n", symArc);
-      if (notOriented) cntds = scanf("%u-%u", &s, &d);
+      if (fr) printf("entrer 2 sommets N%sM, N,M 2 entiers positifs\n", symArete);
+      else printf("enter 2 vertices N%sM, N,M 2 positif integers\n", symArete);
+      if (undirected) cntds = scanf("%u-%u", &s, &d);
       else cntds = scanf("%u->%u", &s, &d);
     } while (cntds != 2);
     chemin* pth = NULL;
-    printf("les chemins entre %u et %u:\n", s, d);
+    if (fr) printf("les chemins entre %u et %u:\n", s, d);
+    else printf("the paths between %u and %u:\n", s, d);
     path(G, s, d, pth);
     break;
     case '0':
-    printf("parcours en largeur du graphe en itératif\n");
+    if (fr) printf("parcours en largeur du graphe en itératif\n");
+    else printf("iterative graph width traversal\n");
     initStateGraph(&st, G);
     tmp = G->lnd;
     while (tmp) {
