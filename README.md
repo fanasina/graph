@@ -1,5 +1,5 @@
 ## graph
-some functions graph.
+some graph functions.
 
 
 ### use
